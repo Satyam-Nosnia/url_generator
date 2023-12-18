@@ -42,7 +42,7 @@ app.get("/:dynamicUrl", async (req, res) => {
 
 app.post("/storeData", async (req, res) => {
   try {
-    const { videoPath } = req.body;
+    const { videoPath, textMessage } = req.body;
 
     const url = generateRandomString(6);
 
@@ -52,7 +52,7 @@ app.post("/storeData", async (req, res) => {
     }
 
     // Store data in MSSQL
-    const result = await storeDataInMSSQL(url, videoPath);
+    const result = await storeDataInMSSQL(url, videoPath, textMessage);
 
     res.json({ success: true, result });
   } catch (error) {
@@ -66,7 +66,7 @@ async function fetchDataFromMSSQL(dynamicUrl) {
   try {
     // Create a connection pool
     const pool = await poolPromise;
-    const SP_GET_URL_DATA = "GET_URL_DATA";
+    const SP_GET_URL_DATA = "SP_GET_URL_DATA";
 
     // Execute MSSQL query based on dynamicUrl
 
@@ -82,21 +82,22 @@ async function fetchDataFromMSSQL(dynamicUrl) {
     return result.recordset[0]; // Assuming a single result row, adjust as needed
   } catch (error) {
     console.error("Error fetching data from MSSQL:", error);
-    throw error;
+    console.log(error);
   }
 }
 
-async function storeDataInMSSQL(url, videoPath) {
+async function storeDataInMSSQL(url, videoPath, textMessage) {
   try {
     const pool = await poolPromise;
 
-    const SP_STORE_URL_DATA = "SP_GET_URL_DATA";
+    const SP_STORE_URL_DATA = "SP_INSERT_URL_DATA";
 
     // Assuming you have a table named 'YourTable'
     const result = await pool
       .request()
       .input("date", sql.DateTime, new Date()) // Assuming date is a string in a valid format
       .input("url", sql.NVarChar, url)
+      .input("textMessage", sql.NVarChar, textMessage)
       .input("videoPath", sql.NVarChar, videoPath)
       .execute(SP_STORE_URL_DATA);
     // .query('INSERT INTO YourTable (DateColumn, UrlColumn, VideoPathColumn) VALUES (@date, @url, @videoPath)');
@@ -106,7 +107,7 @@ async function storeDataInMSSQL(url, videoPath) {
     return result.rowsAffected;
   } catch (error) {
     console.error("Error storing data in MSSQL:", error);
-    throw error;
+    console.error(error);
   }
 }
 
