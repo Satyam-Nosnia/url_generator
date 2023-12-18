@@ -82,7 +82,7 @@ async function fetchDataFromMSSQL(dynamicUrl) {
     return result.recordset[0]; // Assuming a single result row, adjust as needed
   } catch (error) {
     console.error("Error fetching data from MSSQL:", error);
-    throw error;
+    console.log(error);
   }
 }
 
@@ -106,7 +106,7 @@ async function storeDataInMSSQL(url, videoPath) {
     return result.rowsAffected;
   } catch (error) {
     console.error("Error storing data in MSSQL:", error);
-    throw error;
+    console.error(error);
   }
 }
 
